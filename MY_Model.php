@@ -8,7 +8,7 @@
  * @license 	Creative Commons Attribution-Share Alike 3.0 Unported
  * @author  	Mark Croxton, mcroxton@hallmark-design.co.uk
  * @copyright  	Hallmark Design, www.hallmark-design.co.uk
- * @version 	1.0.3 (19 May 2010)
+ * @version 	1.0.4 (23 August 2010)
  */
 
 class Table {
@@ -248,7 +248,7 @@ class MY_Model extends Model {
 	 * @param string $pk the primary key of the table (defaults to first column in table)
 	 * @return void
 	 */
-	protected function load_table($table, $alias='', $fields=array(), $pk="id")
+	protected function load_table($table, $alias='', $fields=array(), $pk="")
 	{
 		$alias 						= !empty($alias) ? $alias : $table;
 		$this->$alias  				= new Table($table, $alias);
