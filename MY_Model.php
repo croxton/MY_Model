@@ -8,7 +8,7 @@
  * @license 	Creative Commons Attribution-Share Alike 3.0 Unported
  * @author  	Mark Croxton, mcroxton@hallmark-design.co.uk
  * @copyright  	Hallmark Design, www.hallmark-design.co.uk
- * @version 	1.0.4 (23 August 2010)
+ * @version 	1.0.5 (20 December 2010)
  */
 
 class Table {
@@ -334,7 +334,7 @@ class MY_Model extends Model {
 				if (strpos($value, '.') !== FALSE)
 				{
 					// table alias has been hardcoded, e.g. 'table.field'
-					$this->db->select($value, $escape_field_names);
+					$this->db->select($value, FALSE);
 					
 					// extract the table from the string and add to tables used
 					$value = explode('.', $value);
