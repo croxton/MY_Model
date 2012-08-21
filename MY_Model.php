@@ -8,7 +8,7 @@
  * @license 	Creative Commons Attribution-Share Alike 3.0 Unported
  * @author  	Mark Croxton, mcroxton@hallmark-design.co.uk
  * @copyright  	Hallmark Design, www.hallmark-design.co.uk
- * @version 	1.0.5 (20 December 2010)
+ * @version 	1.0.7 (23 July 2012)
  */
 
 class Table {
@@ -94,7 +94,7 @@ class Table {
 	}
 }
 
-class MY_Model extends Model {
+class MY_Model extends CI_Model {
 	
 	/**
  	 * The name of the *primary* associated table name of the Model object
@@ -188,7 +188,7 @@ class MY_Model extends Model {
 	 * @param bool $init initialise the query
 	 * @return object
 	 */
-	public function with($table, $init=true)
+	public function with($table, $init=TRUE)
 	{
 		// initialise
 		if ($init) $this->init();
@@ -228,7 +228,7 @@ class MY_Model extends Model {
 		// get cached table structure for this model
 		$fields = $cache->get('table_structure/'.$key);
 
-		if ($fields === false)
+		if ($fields === FALSE)
 		{
 			foreach ($tables as $table)
 			{
@@ -271,7 +271,7 @@ class MY_Model extends Model {
 	 * @param array $use_alias use table alias instead of table name?
 	 * @return void
 	 */
-	protected function from($from='', $use_alias=true)
+	protected function from($from='', $use_alias=TRUE)
 	{
 		if (empty($from)) $table = $this->_table;
 		else $table = $from;
@@ -313,7 +313,7 @@ class MY_Model extends Model {
 	 * @param array $tables
 	 * @return object
 	 */
-	protected function select($fields=array(), $escape_field_names=true, $tables=array())
+	protected function select($fields=array(), $escape_field_names=TRUE, $tables=array())
 	{
 		// use already joined tables if tables is empty
 		if (empty($tables)) $tables = $this->tables_joined;
@@ -382,9 +382,10 @@ class MY_Model extends Model {
 	 * @param array $fields
 	 * @param array $tables
 	 * @param boolean $use_alias use table aliases for where statements?
+	 * @param boolean $escape escape query
 	 * @return object
 	 */
-	protected function where($options, $tables=array(), $use_alias=true)
+	protected function where($options, $tables=array(), $use_alias=TRUE, $escape=TRUE)
 	{		
 		if (is_array($options))
 		{	
@@ -407,11 +408,11 @@ class MY_Model extends Model {
 					// table alias has been hardcoded, e.g. 'table.field'
 					if (is_array($value) && !empty($value)) 
 					{
-						$this->db->where_in($field, $value);
+						$this->db->where_in($field, $value, $escape);
 					}
 					else
 					{
-						$this->db->where($field, $value);
+						$this->db->where($field, $value, $escape);
 					}
 				
 					// extract the table from the string and add to tables used
@@ -439,11 +440,11 @@ class MY_Model extends Model {
 						{
 							if (is_array($value) && !empty($value)) 
 							{
-								$this->db->where_in($table_name.'.'.$field, $value);
+								$this->db->where_in($table_name.'.'.$field, $value, $escape);
 							}
 							else
 							{
-								$this->db->where($table_name.'.'.$field, $value);
+								$this->db->where($table_name.'.'.$field, $value, $escape);
 							}
 							// add to tables used
 							if (!in_array($table, $this->tables_used))
@@ -459,8 +460,14 @@ class MY_Model extends Model {
 		else
 		{
 			// hardcoded string, pass to $this->db->where
-			if (!empty($tables)) $this->db->where($options, $tables);
-			else $this->db->where($options);
+			if (!empty($tables)) 
+			{
+				$this->db->where($options, $tables, $escape);
+			}
+			else 
+			{
+				$this->db->where($options, NULL, $escape);
+			}
 		}
 		return $this;
 	}
@@ -474,7 +481,7 @@ class MY_Model extends Model {
 	 * @param boolean $with  use the joined table as the primary table for this model?
 	 * @return object (success), bool (failure)
 	 */
-	protected function join($table=null, $type='left', $with=false)
+	protected function join($table=null, $type='left', $with=FALSE)
 	{
 		if (is_null($table))
 		{
@@ -490,7 +497,7 @@ class MY_Model extends Model {
 				
 				return $this;
 			} 
-			else return false;
+			else return FALSE;
 		}
 		else if (!in_array($table, $this->tables_joined))
 		{
@@ -524,12 +531,12 @@ class MY_Model extends Model {
 				$this->tables_joined[] = $table2;
 				
 				// set joined table as primary table for this model (note: do not inititalise)
-				if ($with) $this->with($table2, false);
+				if ($with) $this->with($table2, FALSE);
 
 				return $this;
 			}
 	
-			else return false;
+			else return FALSE;
 		}
 		else
 		{
@@ -539,7 +546,7 @@ class MY_Model extends Model {
 	}
 
    /**
-	* _required method returns false if the $data array does not contain all of the keys assigned by the $required array.
+	* _required method returns FALSE if the $data array does not contain all of the keys assigned by the $required array.
 	*
 	* @param array $required
 	* @param array $data
@@ -549,9 +556,9 @@ class MY_Model extends Model {
 	{
 	    foreach($required as $field) 
 		{
-			if(!isset($data[$field])) return false;
+			if(!isset($data[$field])) return FALSE;
 		}
-	    return true;
+	    return TRUE;
 	}
 	
 	/**
@@ -595,9 +602,9 @@ class MY_Model extends Model {
 		if ($this->db->insert($this->$table->table, $data))
 		{
 			$this->_insert_id = $this->db->insert_id();
-			return true;
+			return TRUE;
 		}
-		else return false;
+		else return FALSE;
 	}
 	
 	/**
@@ -620,7 +627,7 @@ class MY_Model extends Model {
 		if (!is_array($where)) $where = array($this->$table->pk => $where);
 		
 		// make where conditions, force use of the table name
-		$this->where($where, $table, false);
+		$this->where($where, $table, FALSE);
 
 		foreach ($data as $key => $value)
 		{
@@ -634,9 +641,9 @@ class MY_Model extends Model {
 		if ($this->db->update($this->$table->table, $data))
 		{
 			$this->_affected_rows = $this->db->affected_rows();
-			return true;
+			return TRUE;
 		}
-		else return false;
+		else return FALSE;
 	}
 	
 	/**
@@ -659,15 +666,15 @@ class MY_Model extends Model {
 		if (!is_array($where)) $where = array($this->$table->pk => $where);
 		
 		// force use of real table name for where conditions
-		$this->where($where, $table, false);
+		$this->where($where, $table, FALSE);
 		
 		// do delete - note that CI does not support aliases in delete() :(
 		if ( $this->db->delete($this->$table->table, '', $limit) )
 		{
 			$this->_affected_rows = $this->db->affected_rows();
-			return true;
+			return TRUE;
 		}
-		else return false;
+		else return FALSE;
 	}
 	
    /**
@@ -678,7 +685,7 @@ class MY_Model extends Model {
 	* @param bool $init reset the query object
 	* @return integer
 	*/
-	public function count($where, $table=null, $init=true)
+	public function count($where, $table=null, $init=TRUE)
 	{
 		if ($where == null) return FALSE;
 		if ($table == null) $table = $this->_table;		
@@ -746,7 +753,7 @@ class MY_Model extends Model {
 		{
 			$options = is_array($args[0]) ? $args[0] : array($args[0]);
 			$table 	 = isset($args[1]) ? $args[1] : null;
-			$init	 = isset($args[2]) ? $args[2] : true;
+			$init	 = isset($args[2]) ? $args[2] : TRUE;
 		
 			if ($table == null) $table = $this->_table;
 		
@@ -762,11 +769,11 @@ class MY_Model extends Model {
 		    // default values
 		    $options = $this->_default(
 				array(
-					'fields' 	=> array($this->$table->pk),
-					'sort' 		=> 'asc', 
+					'fields' 	=> $this->$table->fields,
+					'sort' 		=> '', // ASC is default, and not being explicit means user can pass multiple sort values in order_by
 					'order_by' 	=> $this->$table->alias.'.'.$this->$table->pk,
 					'offset'	=> 0,
-					'distinct'	=> true,
+					'distinct'	=> TRUE,
 					'join'		=> 'left'
 				), $options);
 			
@@ -788,7 +795,7 @@ class MY_Model extends Model {
 			// which fields do we want to retrieve?
 			if (is_array($options['fields']))
 			{
-				$this->select($options['fields'], true, $tables);
+				$this->select($options['fields'], TRUE, $tables);
 			}
 			else
 			{
@@ -815,10 +822,10 @@ class MY_Model extends Model {
 		// run the query
 	    $query = $this->db->get();
 		$this->_num_rows = $query->num_rows();
-	
+		
 		if ($query->num_rows() == 0) 
 		{
-			return false;
+			return FALSE;
 		}
 
 		// otherwise, return an array of objects
@@ -833,7 +840,7 @@ class MY_Model extends Model {
 	 * @param bool $init reset the query object
 	 * @return single row either in array or in object based on model config
 	 */
-	public function get_one($options=array(), $table=null, $init=true)
+	public function get_one($options=array(), $table=null, $init=TRUE)
 	{
 		$options['limit'] = 1;
 		$result = $this->get($options, $table, $init);
@@ -849,7 +856,7 @@ class MY_Model extends Model {
 	 * @param bool $init reset the query object
 	 * @return mixed
 	 */
-	public function get_field($field, $options=array(), $table=null, $init=true)
+	public function get_field($field, $options=array(), $table=null, $init=TRUE)
 	{
 		$options['fields'] = array($field);
 		$result = $this->get_one($options, $table, $init);
@@ -867,7 +874,7 @@ class MY_Model extends Model {
 	 * @param bool $init reset the query object
 	 * @return array a list of key value pairs given criteria
 	 */
-	public function get_list($key, $value, $options=array(), $table=null, $init=true)
+	public function get_list($key, $value, $options=array(), $table=null, $init=TRUE)
 	{
 		$options['fields'] = array($key, $value);	
 		$list = array();
@@ -881,7 +888,7 @@ class MY_Model extends Model {
 		}
 		else
 		{
-			return false;
+			return FALSE;
 		}
 		return $list; 
 	}
@@ -896,7 +903,7 @@ class MY_Model extends Model {
 	 * @param bool $init reset the query object
 	 * @return array a numeric indexed array of column values
 	 */
-	public function get_column($column, $options=array(), $table=null, $init=true)
+	public function get_column($column, $options=array(), $table=null, $init=TRUE)
 	{
 		$options['fields'] = array($column);	
 		$list = array();
@@ -910,7 +917,7 @@ class MY_Model extends Model {
 		}
 		else
 		{
-			return false;
+			return FALSE;
 		}
 		return $list; 
 	}
@@ -978,6 +985,6 @@ class MY_Model extends Model {
 		{
 			return $this->_count[$key];
 		}
-		else return false;
+		else return FALSE;
 	}
 }
